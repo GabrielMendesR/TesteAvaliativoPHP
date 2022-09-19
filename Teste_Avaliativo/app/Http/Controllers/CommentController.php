@@ -28,7 +28,7 @@ class CommentController extends Controller
             $comment = new Comment;
             $comment->descricao = $request->descricao;
             $comment->usuario = $request->usuario;
-            $comment->fk_postagem_id_ = $id;
+            $comment->fk_postagem_id = $id;
             $comment->save();
 
             return response()->json([
@@ -74,7 +74,7 @@ class CommentController extends Controller
                 ], 404);
             }
 
-            $comment->comments = ($request->has('comments')) ? $request->comments : $comment->comments;
+            $comment->descricao = ($request->has('descricao')) ? $request->descricao : $comment->descricao;
             $comment->save();
 
             return response()->json([

@@ -33,7 +33,6 @@ class PostController extends Controller
             $post->descricao = $request->descricao;
             $post->titulo = $request->titulo;
             $post->usuario = $request->usuario;
-            $post->fk_postagem_id = 1;
             $post->save();
 
             return response()->json([
@@ -52,7 +51,7 @@ class PostController extends Controller
         if (Post::where('id', $id)->exists()) {
             $post = Post::where('id', $id)->get()->toJson(JSON_PRETTY_PRINT);
             return response($post, 200);
-        } else {
+        } else { 
             return response()->json([
                 "message" => "Post Not Found Or Does Not Exist"
             ], 404);
