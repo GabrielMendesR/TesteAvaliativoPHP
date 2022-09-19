@@ -3,84 +3,113 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
-use App\Http\Requests\StoreCommentRequest;
-use App\Http\Requests\UpdateCommentRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function indexComment(Request $request, $id)
     {
-        //
+        return Comment::where('fk_postagem_id', $id)->get();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+
+    public function storeComment(Request $request, $id)
     {
-        //
+        $validated = Validator::make($request->all(), [
+            'descricao' => ['required', 'max:200'],
+            'usuario' => ['required', 'max:20'],
+            
+        ]);
+
+        if (!$validated->fails()) {
+
+            $comment = new Comment;
+            $comment->descricao = $request->descricao;
+            $comment->usuario = $request->usuario;
+            $comment->fk_postagem_id_ = $id;
+            $comment->save();
+
+            return response()->json([
+                "message" => "Comment Created"
+            ], 201);
+        }
+
+        return response()->json([
+            "message" => $validated->errors()->all()
+        ], 500);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCommentRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreCommentRequest $request)
+
+    public function showComment(Request $request, $id, $id_comments)
     {
-        //
+        if (Comment::where('id', $id_comments)->exists()) {
+            $comment = Comment::find($id_comments);
+
+            if (!($comment->fk_postagem_id == $id)) {
+                return response()->json([
+                    "message" => "Comment Not Found On Post"
+                ], 404);
+            }
+
+            return response($comment, 200);
+        } else {
+            return response()->json([
+                "message" => "Comment Not Found Or Does Not Exist"
+            ], 404);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Comment $comment)
+
+    public function editComment(Request $request, $id, $id_comments)
     {
-        //
+        if (Comment::where('id', $id_comments)->exists()) {
+
+            $comment = Comment::find($id_comments);
+
+            if (!($comment->fk_postagem_id == $id)) {
+                return response()->json([
+                    "message" => "Comment Not Found Or Does Not Exist On Post"
+                ], 404);
+            }
+
+            $comment->comments = ($request->has('comments')) ? $request->comments : $comment->comments;
+            $comment->save();
+
+            return response()->json([
+                "message" => "Comment Updated"
+            ], 200);
+        } else {
+            return response()->json([
+                "message" => "Comment Not Found Or Does Not Exist"
+            ], 404);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Comment $comment)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateCommentRequest  $request
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateCommentRequest $request, Comment $comment)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Comment $comment)
+    public function destroyComment(Request $request, $id, $id_comments)
     {
-        //
+        if (Comment::where('id', $id_comments)->exists()) {
+
+            $comments = Comment::find($id_comments);
+
+            if (!($comments->fk_postagem_id == $id)) {
+                return response()->json([
+                    "message" => "Comment Not Found Or Does Not Exist On Post"
+                ], 404);
+            }
+
+            $comments->delete();
+
+            return response()->json([
+                "message" => "Comment Deleted"
+            ], 202);
+        } else {
+            return response()->json([
+                "message" => "Comment Not Found Or Does Not Exist"
+            ], 404);
+        }
     }
 }
